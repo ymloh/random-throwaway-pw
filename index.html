@@ -8,25 +8,35 @@
   <link href="style.css" rel="stylesheet">
   <script>
     const generatePass = (length) => {
-      let number = parseInt(Math.random().toString().substring(2))
-      let password = btoa(number)
+      let number1 = parseInt(Math.random().toString().substring(2))
+      let number2 = parseInt(Math.random().toString().substring(2))
+      let password = (btoa(number1.toString(36)) + btoa(number2.toString(36))).substring(0, length)
       navigator.clipboard.writeText(password)
-      console.log(number)
-      console.log(password)
-      console.log(number.toString(36))
-      console.log(btoa(number.toString(36)))
+      console.log(`${password} copied to clipboard`)
     }
     window.addEventListener('load', () => {
+      // add length-select options
+      const select = document.querySelector('#select-pass-length')
+      for (let i=6; i<=24; i++) {
+        let option = document.createElement("option")
+        option.value = i
+        option.innerText = i
+        select.appendChild(option)
+      }
+
       const button = document.querySelector('#the-only-button-in-this-entire-universe-just-making-sure-this-id-is-unique')
       button.addEventListener('click', () => {
-        generatePass()
+        let length = document.querySelector('#select-pass-length').value
+        generatePass(length)
       })
     })
   </script>
 </head>
 <body>
-  <div>
-    <button id="the-only-button-in-this-entire-universe-just-making-sure-this-id-is-unique">Generate to Clipboard</button>
+  <div class="section-div">
+    <span class="section-title">length</span>
+    <select name="pass-length" id="select-pass-length"></select>
   </div>
+  <button id="the-only-button-in-this-entire-universe-just-making-sure-this-id-is-unique">Generate to Clipboard</button>
 </body>
 </html>
