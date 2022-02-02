@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Throwaway Pass Gen</title>
+  <link href="style.css" rel="stylesheet">
+  <script>
+    const generatePass = (length) => {
+      let number = parseInt(Math.random().toString().substring(2))
+      let password = btoa(number)
+      navigator.clipboard.writeText(password)
+      console.log(number)
+      console.log(password)
+      console.log(number.toString(36))
+      console.log(btoa(number.toString(36)))
+    }
+    window.addEventListener('load', () => {
+      const button = document.querySelector('#the-only-button-in-this-entire-universe-just-making-sure-this-id-is-unique')
+      button.addEventListener('click', () => {
+        generatePass()
+      })
+    })
+  </script>
+</head>
+<body>
+  <div>
+    <button id="the-only-button-in-this-entire-universe-just-making-sure-this-id-is-unique">Generate to Clipboard</button>
+  </div>
+</body>
+</html>
