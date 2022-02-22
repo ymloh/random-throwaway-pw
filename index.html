@@ -10,7 +10,8 @@
     const generatePass = (length) => {
       let number1 = parseInt(Math.random().toString().substring(2))
       let number2 = parseInt(Math.random().toString().substring(2))
-      let password = (btoa(number1.toString(36)) + btoa(number2.toString(36))).substring(0, length)
+      console.log(`${number1.toString(36)} - ${number2}`)
+      let password = (btoa(number1.toString(36) + number2.toString(36))).split("").sort((a, b) => 0.5 - Math.random()).join("").substring(0, length)
       navigator.clipboard.writeText(password)
       console.log(`${password} copied to clipboard`)
     }
