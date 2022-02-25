@@ -11,7 +11,9 @@
     const generatePass = (length) => {
       let password = ''
       while (password.length < length) password += f()
-      navigator.clipboard.writeText(password.substring(0, length))
+      password = password.substring(0, length)
+      password = password.split("").map(a => Math.random() < 0.5 ? a : a.toUpperCase())
+      navigator.clipboard.writeText(password)
       console.log(`${password} copied to clipboard`)
     }
     window.addEventListener('load', () => {
