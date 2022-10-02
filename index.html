@@ -1,44 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Throwaway Pass Gen</title>
-  <link href="style.css" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
   <script>
     const f = () => Math.random().toString(36).substring(2)
-    const generatePass = (length) => {
-      let password = ''
-      while (password.length < length) password += f()
-      password = password.substring(0, length)
-      password = password.split("").map(a => Math.random() < 0.5 ? a : a.toUpperCase()).join("")
-      navigator.clipboard.writeText(password)
-      console.log(`${password} copied to clipboard`)
+
+    const pwGen = function*(charset) {
+      const length = 10
+      const randomValues = new Uint8Array(length)
+      let randomValuesArr = []
+      while (true) {
+        if (randomValuesArr.length == 0) {
+          crypto.getRandomValues(randomValues)
+          randomValuesArr = Array.from(randomValues)
+        }
+        yield charset[randomValuesArr.pop() % charset.length]
+      }
     }
+
+    const charRange = function(fromChar, toChar) {
+      range = ""
+      from = fromChar.charCodeAt(0)
+      to = toChar.charCodeAt(0)
+      if (from > to) [from, to] = [to, from]
+      while (from <= to) range += String.fromCharCode(from++)
+      return range
+    }
+
+    const charsets = new Map([
+      ["Lowercase Alphabet", charRange('a', 'z')],
+      ["Uppercase Alphabet", charRange('A', 'Z')],
+      ["Numbers", charRange('0', '9')],
+      ["Symbols", "`~!@#$%^&*()-_=+[]';.,/\\|"]
+    ])
+
     window.addEventListener('load', () => {
-      // add length-select options
-      const select = document.querySelector('#select-pass-length')
-      for (let i=6; i<=24; i++) {
-        let option = document.createElement("option")
-        option.value = i
-        option.innerText = i
-        select.appendChild(option)
+      const form = document.querySelector("#generator-form")
+      const formButton = document.querySelector("#form-button")
+
+      const getGenerator = function() {
+        const getChosenCharset = () => {
+          let charset = ""
+          for (const checkbox of form.querySelectorAll("input:checked")) {
+            charset += charsets.get(checkbox.id)
+          }
+          return charset
+        }
+        let currentCharset = getChosenCharset()
+        let currentGenerator = pwGen(currentCharset)
+        return () => {
+          const thisCharset = getChosenCharset()
+          if (currentCharset !== thisCharset) {
+            currentCharset = thisCharset
+            currentGenerator = pwGen(currentCharset)
+          }
+          return currentGenerator
+        }
+      }()
+
+      for (const labelText of charsets.keys()) {
+        const div = document.createElement("div")
+        const label = document.createElement("label")
+        const input = document.createElement("input")
+        const i = document.createElement("i")
+
+        input.id = `${labelText}`
+        
+        div.classList.add("input-group")
+        
+        label.classList.add("form-switch")
+        label.nodeValue = labelText
+        
+        input.type = "checkbox"
+        input.setAttribute('checked', null)
+        // input.addEventListener('change', updateGenerator)
+        i.classList.add("form-icon")
+
+        label.insertBefore(input, null)
+        label.insertBefore(i, null)
+        div.insertBefore(label, null)
+
+        label.innerHTML += labelText
+        form.insertBefore(div, formButton)
+
+        // form.addEventListener('submit', function(evt) {
+        //   evt.preventDefault()
+        // }, true)
       }
 
-      const button = document.querySelector('#the-only-button-in-this-entire-universe-just-making-sure-this-id-is-unique')
-      button.addEventListener('click', () => {
-        let length = document.querySelector('#select-pass-length').value
-        generatePass(length)
+      generateButton = document.querySelector("#form-button")
+      generateButton.addEventListener("click", function(evt) {
+        evt.preventDefault()
+        const gen = getGenerator()
+        let length = parseInt(form.querySelector("#input-length input").value)
+        let generated = ""
+        while (length-- > 0) {
+          generated += gen.next().value
+        }
+        console.log(generated)
+        navigator.clipboard.writeText(generated)
+        
       })
     })
+
+
   </script>
 </head>
+
 <body>
-  <div class="section-div">
-    <span class="section-title">length</span>
-    <select name="pass-length" id="select-pass-length"></select>
-  </div>
-  <button id="the-only-button-in-this-entire-universe-just-making-sure-this-id-is-unique">Generate to Clipboard</button>
+  <form class="form-group" id="generator-form" style="max-width: 500px;">
+    <div class="input-group" id="input-length">
+      <input type="number" class="form-input" value="12" min="6" max="20"></select>
+      <label class="input-group-addon">characters long</label>
+    </div>
+    <button class="btn btn-primary col-12" id="form-button">Generate to Clipboard</button>
+
+  </form>
 </body>
+
 </html>
